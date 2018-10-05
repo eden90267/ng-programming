@@ -319,3 +319,20 @@ new Car().engine; // 報錯
 protected 在派生類中仍然可以訪問，而不能外部訪問。
 
 ### 參數屬性
+
+參數屬性是透過給 constructor 參數添加一個訪問限定符 (public、protected 及 private) 來聲明的。參數屬性可以方便讓我們在一個地方定義並初始化類成員。
+
+```typescript
+class Car {
+  constructor(protected engine: string) {}
+  drive(distanceInMeters: number = 0) {
+    console.log(`A car runs ${distanceInMeters}m powered by ` + this.engine);
+  }
+}
+```
+
+在 constructor 透過 protected engine: string 來創建和初始化 engine 成員屬性，把聲明和賦值合併到一處。
+
+### 靜態屬性
+
+類的靜態成員存在於類本身而不是類的實例上，類似於在實例屬性上使用 “this.” 來訪問屬性，我們使用 “類名.” 來訪問靜態屬性。
