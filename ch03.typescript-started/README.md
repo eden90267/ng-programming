@@ -335,4 +335,322 @@ class Car {
 
 ### 靜態屬性
 
-類的靜態成員存在於類本身而不是類的實例上，類似於在實例屬性上使用 “this.” 來訪問屬性，我們使用 “類名.” 來訪問靜態屬性。
+類的靜態成員存在於類本身而不是類的實例上，類似於在實例屬性上使用 “this.” 來訪問屬性，我們使用 “類名.” 來訪問靜態屬性。可使用 static 關鍵字來定義類的靜態屬性：
+
+```typescript
+class Grid {
+  static origin = {x: 0, y: 0};
+  constructor(public scale: number) {}
+  calculateDistanceFromOrigin(point: {x: number, y: number}) {
+    let xDist = (point.x - Grid.origin.x);
+    let yDist = (point.y - Grid.origin.y);
+    return Math.sqrt(xDist * xDist + yDist * yDist) / this.scale;
+  }
+}
+```
+
+### 抽象類
+
+TypeScript 有抽象類的概念，它是供其他類繼承的基類，不能直接被實例化。不同於接口，抽象類必須包含一些抽象方法，同時也可以包含非抽象的成員。抽象方法不包含具體實現，並且必須在派生類中實現。
+
+```typescript
+abstract class Person {
+  abstract speak(): void;
+  walking(): void {
+    console.log('Walking on the road');
+  }
+}
+
+class Male extends Person {
+  speak(): void {
+    console.log('How are you?');
+  }
+}
+```
+
+- 接口更注重功能的設計
+- 抽象類更注重結構內容的體現
+
+## 模組
+
+ES6 引入模組的概念，在 TypeScript 也支持模組的使用 (與 ES6 一樣)。
+
+- import
+- export
+
+模組內部變數、函數和類是不可見的，除非明確使用 export 導出它們。類似的，如果想使用其他模組導出的變數、函數、類和接口，則必須先透過 import 導入它們。
+
+模組使用模組加載器來導入它的依賴，模組加載器在代碼運行會查找並加載模組間的所有依賴。Angular 中，常用模組加載器有 SystemJS 和 Webpack。
+
+### export
+
+導出有分以下三種：
+
+- 導出聲明
+
+  ```typescript
+  export const COMPANY = 'GF';
+  
+  export interface IdentityValidate {
+    
+  }
+  
+  export class ErpIdentityValidate implements IdentityValidate {
+    
+  }
+  ```
+
+- 導出語句
+  - 需要對導出的模組進行重命名
+
+  ```typescript
+  export class ErpIdentityValidate implements IdentityValidate {
+  }
+  
+  export {ErpIdentityValidate};
+  export {ErpIdentityValidate as GFIdentityValidate};
+  ```
+
+- 模組包裝
+  - 修改和擴展已有模組，並導出供其他模組調用
+
+  ```typescript
+  export {ErpIdentityValidate as RegExpBasedZipCodeValidator} from './ErpIdentityValidate';
+  ```
+
+  - 一個模組可以包裏多個模組，並把新的內容以一個新的模組導出
+
+  ```typescript
+  export * from './IdentityValidate';
+  export * from './ErpIdentityValidate';
+  ```
+
+### import
+
+導入如下兩種方式：
+
+- 導入一個模組
+
+  ```typescript
+  import {ErpIdentityValidate} from './ErpIdentityValidate';
+  ```
+
+- 別名導入
+
+  ```typescript
+  import {ErpIdentityValidate as ERP} from './ErpIdentityValidate';
+  ```
+
+  我們也可對整個模組進行別名導入，將整個模組導入到一個變數，並透過它來訪問模組的導出部分：
+
+  ```typescript
+  import * as validator from './ErpIdentityValidate';
+  ```
+
+### default export
+
+每個模組都可以有一個默認導出。使用 default 關鍵字。類和函數聲明可直接省略導出名來實現默認導出。默認導出有利於減少調用方調用模組的層數，省去一些冗余的模組前綴書寫：
+
+```typescript
+export default class ErpIdentityValidate implements IdentityValidate {
+  
+}
+import validator from './ErpIdentityValidate';
+
+export default function(s: string) {
+  
+}
+import validate from './nameServiceValidate';
+
+export default 'Angular'
+import name from './constantService';
+```
+
+### 模組設計原則
+
+模組設計中，共同遵循一些原則有利於更好編寫和維護專案代碼。以下列出幾點模組設計原則：
+
+#### 盡可能在頂層導出
+
+- 過多的 “.” 操作使得開發者要記住過多細節，所以盡量使用默認導出或在頂層導出
+
+  ```typescript
+  export default class ClassTest {}
+  
+  import ClassTest from './ClassTest';
+  ```
+
+- 若要返回多個對象，則採用頂層導出的方式
+
+  ```typescript
+  export class ClassTest {}
+  export function FuncTest() {
+  
+  }
+  
+  import {ClassTest, FuncTest} from './ClassTest';
+  ```
+
+#### 明確列出導入對象的名稱
+
+這樣只要接口不變，調用方式就可以不變。
+
+```typescript
+import {ClassTest, FuncTest} from './ClassTest';
+```
+
+#### 使用命名空間模式導出
+
+```typescript
+export class Dog {}
+export class Cat {}
+
+import * as myLargeModule from './MyLargeModule';
+let x = new myLargeModule.Dog();
+```
+
+#### 使用模組包裝進行擴展
+
+我們可能經常需要擴展一個模組的功能，推薦方案是不要去改變原來物件，而是導出一個新的物件來提供新的功能：
+
+```typescript
+export class ModuleA {
+  
+}
+
+import {ModuleA} from './ModuleA';
+class ModuleB extends ModuleA {
+  
+}
+export {ModuleA, ModuleB}
+```
+
+## 接口
+
+接口在 OOP 中具有極其重要的作用，在 GoF 的 23 種設計模式中，基本上都可見到接口的身影。長期以來，接口模式一直是 JavaScript 這類弱型別語言的軟肋，雖然有類似於 “鴨式辨型” 等的各種偽實現，但使用起來還是略為繁瑣。TypeScript 接口使用方式類似於 Java，同時還增加了更靈活的接口類型，包括屬性、函數、可索引 (Indexable Type) 和類等類型。
+
+### 屬性類型接口
+
+```typescript
+interface FullName {
+  firstName: string;
+  secondName: string;
+}
+
+function printLabel(name: FullName) {
+  console.log(name.firstName + ' ' + name.secondName);
+}
+
+let myObj = {age: 10, firstName: 'Jim', secondName: 'Raynor'};
+printLabel(myObj);
+```
+
+這裡有兩點要注意：
+
+- 傳給 printLabel() 方法的對象只要 “形式上” 滿足接口要求即可
+- 接口類型檢查器不會去檢查屬性的順序，但要確保相應屬性存在且類型匹配
+
+TypeScript 還提供可選屬性，對可能存在的屬性進行預定義，兼容不傳值的情況。
+
+```typescript
+interface FullName {
+  firstName: string;
+  secondName?: string;
+}
+
+function printLabel(name: FullName) {
+  console.log(name.firstName + ' ' + name.secondName);
+}
+
+let myObj = {firstName: 'Jim'};
+printLabel(myObj);
+```
+
+### 函數類型接口
+
+須明確指定函數參數列表和返回值類型
+
+```typescript
+interface encrypt {
+  (val: string, salt: string): string
+}
+
+let md5: encrypt;
+md5 = function(val: string, salt: string) {
+  let encryptValue = doMd5(val, salt);
+  return encryptValue;
+}
+let pwd = md5('password', 'Angular');
+```
+
+- 函數參數個數需與接口定義的相同，位置與資料類型也須保持一致，參數名稱可以不一樣
+- 函數返回值類型與接口定義的返回值類型要一致
+
+### 可索引類型接口
+
+可索引類型接口用來描述那些可以透過索引得到的類型，比如 `userArray[1]`、`userObject['name']` 等。它包含一個索引簽名，表示用來索引的類型與返回值類型，即透過特定索引來得到指定類型的返回值。
+
+```typescript
+interface UserArray {
+  [index: number]: string;
+}
+interface UserObject {
+  [index: string]: string;
+}
+
+let userArray: UserArray;
+let userObject: UserObject;
+
+userArray = ['張三', '李四'];
+userObject = {'name': '張三'};
+
+console.log(userArray[0]);
+console.log(userObject['name']);
+```
+
+索引簽名支持字符串和數字兩種資料類型。即當使用數字類型來索引時，JavaScript 最終也會將它轉換成字符串類型後再去索引對象。
+
+```typescript
+console.log(userArray[0]);
+console.log(userArray['0']);
+```
+
+### 類類型接口
+
+類類型接口用來規範一個類的內容
+
+```typescript
+interface Animal {
+  name: string;
+  setName(n: string): void;
+}
+class Dog implements Animal {
+  name: string;
+  setName(n: string) {
+    this.name = n;
+  }
+  constructor(n: string) {}
+}
+```
+
+### 接口擴展
+
+```typescript
+interface Animal {
+  
+}
+interface Person extends Animal {
+  
+}
+
+class Programmer {
+  
+}
+
+class ITGirl extends Programmer implements Person {
+  
+}
+```
+
+## 裝飾器
+
