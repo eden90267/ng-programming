@@ -654,3 +654,14 @@ class ITGirl extends Programmer implements Person {
 
 ## 裝飾器
 
+裝飾器 (Decorator) 是一種特殊類型的聲明，它可以被附加到類聲明、方法、屬性或參數上。由 @ 符號緊接一個函數名稱表示，形如 @expression，expression 求值後必須是一個函數，在函數執行時裝飾器的聲明方法會被執行。正如名字所示，裝飾器是用來給附著的主體進行裝飾，添加額外的行為的。
+
+TypeScript 的源碼，可看到官方提供了如下幾種類型裝飾器：
+
+```typescript
+// 方法裝飾器
+declare type MethodDecorator = <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
+
+// 類裝飾器
+declare type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction | void; 
+```
