@@ -664,4 +664,66 @@ declare type MethodDecorator = <T>(target: Object, propertyKey: string | symbol,
 
 // 類裝飾器
 declare type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction | void; 
+
+// 參數裝飾器
+declare type ParameterDecorator = (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
+
+// 屬性裝飾器
+declare type PropertyDecorator = (target: Object, propertyKey: string | symbol) => void;
 ```
+
+### 方法裝飾器
+
+方法裝飾器是在聲明一個方法之前被聲明的 (緊貼著方法聲明)，它會被應用到方法的屬性描述符上，可以用來監視、修改或替換方法定義。方法裝飾器的聲明如下：
+
+```typescript
+declare type MethodDecorator = <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
+```
+
+方法裝飾器表達式在運行時會被當作函數來調用，傳入下列三個參數。
+
+- target：類的原型對象
+- propertyKey：方法的名字
+- descriptor：成員屬性描述
+
+其中 descriptor 類型為 TypedPropertyDescriptor，在 TypeScript 中定義如下：
+
+```typescript
+interface TypedPropertyDescriptor<T> {
+  enumerable?: boolean; // 是否可遍歷
+  configurable?: boolean; // 屬性描述是否可改變或屬性是否可刪除
+  writable?: boolean; // 是否可修改
+  value?: T; // 屬性的值
+  get?: () => T; // 屬性的訪問器函數 (getter)
+  set?: (value: T) => void; // 屬性的設置器函數 (setter)
+}
+```
+
+下面看一個方法裝飾器的例子：
+
+```typescript
+class TestClass {
+  @log
+  testMethod(arg: string) {
+    return "logMsg: " + arg;
+  }
+}
+
+function log(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+  let origin = descriptor.value;
+  descriptor.value = function(...args: any[]) {
+    console.log('args: ' + JSON.stringify(args));
+    let result = origin.apply(this, args);
+    console.log('The result-' + result);
+    return result;
+  };
+  
+  return descriptor;
+}
+
+new TestClass().testMethod('test method decorator');
+```
+
+### 類裝飾器
+
+類裝飾器是在聲明一個類之前被聲明的
