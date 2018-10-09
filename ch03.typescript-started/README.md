@@ -726,4 +726,60 @@ new TestClass().testMethod('test method decorator');
 
 ### 類裝飾器
 
-類裝飾器是在聲明一個類之前被聲明的
+類裝飾器是在聲明一個類之前被聲明的，它應用於類構造函數，可以用來監視、修改或替換類定義。在 TypeScript 中定義如下：
+
+```typescript
+declare type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction | void;
+```
+
+如上所示，類的構造函數作為其唯一的參數。類裝飾器在運行時會被當作函數的形式來調用。
+
+假如類裝飾器返回一個值，那麼它會在構造函數中替換類的聲明。下面是使類裝飾器 (@Component) 的例子：
+
+```typescript
+@Component({
+  selector: 'person',
+  template: 'person.html'
+})
+class Person {
+  constructor(
+    public firstName: string,
+    public secondName: string
+  ) {}
+}
+
+function Component(component) {
+  return (target: any) => {
+    return componentClass(target, component);
+  }
+}
+
+function componentClass(target: any, component?:any): any {
+  var original = target;
+  function construct(constructor, args) { // 處理原型鏈
+    let c: any = function() {
+      return constructor.apply(this, args);
+    };
+    c.prototype = constructor.prototype;
+    return new c;
+  }
+  
+  let f:any = (...args) => { // 打印參數
+    console.log('selector:' + component.selector);
+    console.log('template:' + component.template);
+    console.log(`Person: ${original.name}(${JSON.stringify(args)})`);
+    return construct(original, args);
+  };
+  
+  f.prototype = original.prototype;
+  return f;
+}
+
+let p = new Person('Angular', 'JS');
+// 輸出：
+// selector:person
+// template:person.html
+// Person: Person(["Angular", "JS"])
+```
+
+代碼看起來有點繁瑣，因為返回了一個新的構造函數，必須自己處理好原來的原型鏈。
